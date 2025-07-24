@@ -51,10 +51,6 @@ public class MainWindow : Window, IDisposable
         buffIconSelector = new BuffIconSelector(plugin.Configuration, plugin);
         buffTriggerUI = new BuffTriggerUI(plugin.Configuration, plugin);
 
-        if (Plugin.ClientState.LocalPlayer != null)
-        {
-            previousHp = (int)Plugin.ClientState.LocalPlayer.CurrentHp;
-        }
 
         fireResponse = "还没有返回消息哦";
 

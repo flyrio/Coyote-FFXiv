@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Dalamud.NET.SDK/11.0.0">
+<Project Sdk="Dalamud.NET.SDK/12.0.0">
   <Import Project="Dalamud.Plugin.Bootstrap.targets" />
 
   <PropertyGroup>
-    <Version>0.0.0.1</Version>
+    <Version>0.0.1.1</Version>
     <Description>A sample plugin.</Description>
     <PackageProjectUrl>https://github.com/goatcorp/SamplePlugin</PackageProjectUrl>
     <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
     <IsPackable>false</IsPackable>
+    <TargetFramework>net9.0-windows7.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,7 +20,10 @@
 
   <ItemGroup>
     <Reference Include="ECommons">
-      <HintPath>..\..\国际服依赖库\ECommons\ECommons\bin\Debug\ECommons.dll</HintPath>
+      <HintPath>..\..\..\Dalamud\Main\Dev\AEAssistCNVersion\AEAssist\ECommons.dll</HintPath>
+    </Reference>
+    <Reference Include="InteropGenerator.Runtime">
+      <HintPath>C:\Users\Administrator\AppData\Roaming\XIVLauncherCN\addon\Hooks\dev\InteropGenerator.Runtime.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>

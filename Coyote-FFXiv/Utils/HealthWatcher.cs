@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Text;
 using System.Net.Http;
+using FFXIVClientStructs.FFXIV.Client.Game.Control;
 
 namespace Coyote.Utils;
 public class HealthWatcher
@@ -19,13 +20,13 @@ public class HealthWatcher
     private Configuration _configuration;
     private readonly HttpClient httpClient = new HttpClient();
 
-    public HealthWatcher(Plugin plugin)
+    public unsafe HealthWatcher(Plugin plugin)
     {
         Plugin = plugin;
         _configuration = plugin.Configuration;
-        if (Plugin.ClientState.LocalPlayer != null)
+        if (Control.GetLocalPlayer() != null)
         {
-            previousHp = (int)Plugin.ClientState.LocalPlayer.CurrentHp;
+            previousHp = (int)Control.GetLocalPlayer()->Health;
         }
     }
 

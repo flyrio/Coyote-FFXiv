@@ -9,27 +9,38 @@ using System.IO;
 using System.Net.Http;
 using System.Text;
 using ECommons.DalamudServices;
+using Dalamud.Hooking;
+using FFXIVClientStructs.FFXIV.Client.UI.Misc;
+using System.Runtime.InteropServices;
+using FFXIVClientStructs.FFXIV.Client.System.String;
 
 namespace Coyote.Utils;
 
 public class ChatWatcher : IDisposable
 {
     private readonly SortedSet<XivChatType> _watchedChannels = new();
+    private readonly Hook<PrintMessageDelegate> _printMessageHook;
     private bool _watchAllChannels;
     private string fireResponse;
     private Configuration _configuration;
     private readonly HttpClient httpClient = new HttpClient();
-    public ChatWatcher(Configuration configuration)
+    public unsafe ChatWatcher(Configuration configuration)
     {
         _configuration = configuration;
+        
+        //_printMessageHook = Plugin.Hook.HookFromAddress<PrintMessageDelegate>(Plugin.SigScanner.ScanText("E8 ?? ?? ?? ?? 8B D8 48 8D 4D 00 ?? ?? ?? ?? ??"), this.HandlePrintMessageDetour);
         Plugin.Chat.CheckMessageHandled += OnCheckMessageHandled;
         Plugin.Chat.ChatMessage += OnChatMessage;
+        //_printMessageHook.Enable();
     }
-
+    [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
+    private unsafe delegate uint PrintMessageDelegate(RaptureLogModule* manager, XivChatType chatType, Utf8String* sender, Utf8String* message, int timestamp, byte silent);
     public void Dispose()
     {
         Plugin.Chat.CheckMessageHandled -= OnCheckMessageHandled;
         Plugin.Chat.ChatMessage -= OnChatMessage;
+        //_printMessageHook.Disable();
+        //_printMessageHook.Dispose();
     }
 
     private static void CopySublist(IReadOnlyList<Payload> payloads, List<Payload> newPayloads, int from, int to)
@@ -136,8 +147,6 @@ public class ChatWatcher : IDisposable
         }
     }
 
-
-
 }
 
 
@@ -175,6 +184,8 @@ public class ChatTriggerRuleManager
             return new List<ChatTriggerRule>();
         }
     }
+
+
 }
 public class HPTriggerRuleManager
 {
@@ -211,6 +222,8 @@ public class HPTriggerRuleManager
             return new List<HealthTriggerRule>();
         }
     }
+
+
 }
 
 
