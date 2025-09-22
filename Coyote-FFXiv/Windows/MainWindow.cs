@@ -4,7 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Windowing;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Coyote;
 using System.Numerics;
 using System.Text.Json;

@@ -5,7 +5,7 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using Dalamud.Game.Command;
 using Dalamud.Hooking;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 namespace Coyote.Utils {
     internal class EmoteTool :IDisposable {

@@ -6,7 +6,7 @@ using ECommons.DalamudServices;
 using ECommons.ExcelServices;
 using ECommons.ImGuiMethods;
 using ECommons.SimpleGui;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Lumina.Excel.Sheets;
 using System;
 using ECommons;
@@ -93,7 +93,7 @@ public class BuffIconSelector
                 var texture = TexturesHelper.GetTextureFromIconId((uint)cond.GetIcon());
                 if (texture != null)
                 {
-                    ImGui.Image(texture.ImGuiHandle, JobIconSize);
+                    ImGui.Image(texture.Handle, JobIconSize);
                     ImGui.SameLine();
                 }
                 ImGuiEx.CollectionCheckbox(name, cond, Jobs);
@@ -171,7 +171,7 @@ public class BuffIconSelector
                 }
                 if (tex != null)
                 {
-                    ImGui.Image(tex.ImGuiHandle, StatusIconSize);
+                    ImGui.Image(tex.Handle, StatusIconSize);
                     ImGui.SameLine();
                     ImGuiEx.Tooltip($"{info.IconID}");
                     if (ImGui.Button($"复制##{info.IconID}"))
