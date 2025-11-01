@@ -6,14 +6,15 @@ using System.Runtime.InteropServices;
 using Dalamud.Game.Command;
 using Dalamud.Hooking;
 using Dalamud.Bindings.ImGui;
+using static FFXIVClientStructs.FFXIV.Client.UI.Misc.RaptureHotbarModule;
 
 namespace Coyote.Utils {
     internal class EmoteTool :IDisposable {
         private static class Signatures {
-            internal const string SetActionOnHotbar = "40 53 56 41 56 48 83 EC ?? 41 8B D9";
-            internal const string RunEmote = "E8 ?? ?? ?? ?? 40 84 ED 74 18";
+            internal const string SetActionOnHotbar = "E8 ?? ?? ?? ?? EB 07 44 88 2F ?? ?? ?? ?? ?? ??";
+            internal const string RunEmote = "e8 ?? ?? ?? ?? 40 ?? ?? 74 ?? 48 ?? ?? ?? 48 ?? ?? ff 90 ?? ?? ?? ?? 48 ?? ?? 0f ?? ??";
             internal const string RunEmoteFirstArg = "48 8D 0D ?? ?? ?? ?? 24 ?? 0F B7 D7";
-            internal const string RunEmoteThirdArg = "48 8D 05 ?? ?? ?? ?? 33 DB 48 89 44";
+            internal const string RunEmoteThirdArg = "48 ?? ?? ?? ?? ?? ?? 66 83 7e ?? ?? 48 89 44 24 ??";
         }
 
         private delegate IntPtr SetActionOnHotbarDelegate(IntPtr a1, IntPtr a2, byte actionType, uint actionId);
@@ -57,7 +58,7 @@ namespace Coyote.Utils {
 
         public void DrawSettings() {
             if (this.SetActionOnHotbarHook == null) {
-                ImGui.TextUnformatted("An update broke this tool. Please let Anna know.");
+                ImGui.TextUnformatted("由于游戏更新或版本不对应，请通知作者进行更新.");
                 return;
             }
 
