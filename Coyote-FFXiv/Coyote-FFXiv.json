@@ -6,8 +6,8 @@
     "ApplicableVersion": "any",
     "IsHide": false,
     "IsTestingExclusive": false,
-    "IconUrl": "https://raw.githubusercontent.com/extrant/Coyote-FFXiv/main/Data/Coyote.png",
-    "RepoUrl": "https://github.com/extrant/Coyote-FFXiv",
+    "IconUrl": "https://raw.githubusercontent.com/flyrio/Coyote-FFXiv/main/Data/Coyote.png",
+    "RepoUrl": "https://github.com/flyrio/Coyote-FFXiv",
     "AssemblyVersion": "0.25.11.2",
     "DalamudApiLevel": "14"
 }
