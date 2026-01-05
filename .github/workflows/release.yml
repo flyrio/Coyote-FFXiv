@@ -11,8 +11,6 @@ permissions:
 jobs:
   build:
     runs-on: windows-latest
-    env:
-      DALAMUD_DEV_URL: https://github.com/extrant/Coyote-FFXiv/releases/download/dalamud-dev/dalamud-dev.zip
     steps:
       - uses: actions/checkout@v4
 
@@ -21,14 +19,14 @@ jobs:
         with:
           dotnet-version: "10.0.x"
 
-      - name: Fetch Dalamud dev libs
+      - name: Fetch Dalamud libs (api14)
         shell: pwsh
         run: |
-          $zip = Join-Path $env:RUNNER_TEMP 'dalamud-dev.zip'
+          $zip = Join-Path $env:RUNNER_TEMP 'dalamud-api14.zip'
           $out = Join-Path $env:RUNNER_TEMP 'dalamud'
-          Invoke-WebRequest -Uri $env:DALAMUD_DEV_URL -OutFile $zip
+          Invoke-WebRequest -Uri https://github.com/goatcorp/dalamud-distrib/raw/main/api14/latest.zip -OutFile $zip
           Expand-Archive -Path $zip -DestinationPath $out -Force
-          "DALAMUD_HOME=$out\\Hooks\\dev" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "DALAMUD_HOME=$out" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       - name: Build
         run: dotnet build Coyote-FFXiv\Coyote-FFXiv.csproj -c Release
