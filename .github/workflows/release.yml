@@ -1,0 +1,54 @@
+name: build-release
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      DALAMUD_DEV_URL: https://github.com/extrant/Coyote-FFXiv/releases/download/dalamud-dev/dalamud-dev.zip
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Fetch Dalamud dev libs
+        shell: pwsh
+        run: |
+          $zip = Join-Path $env:RUNNER_TEMP 'dalamud-dev.zip'
+          $out = Join-Path $env:RUNNER_TEMP 'dalamud'
+          Invoke-WebRequest -Uri $env:DALAMUD_DEV_URL -OutFile $zip
+          Expand-Archive -Path $zip -DestinationPath $out -Force
+          "DALAMUD_HOME=$out\\Hooks\\dev" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Build
+        run: dotnet build Coyote-FFXiv\Coyote-FFXiv.csproj -c Release
+
+      - name: Prepare artifact
+        shell: pwsh
+        run: |
+          $source = 'Coyote-FFXiv\bin\Release\Coyote-FFXiv\latest.zip'
+          if (-not (Test-Path $source)) {
+            throw "Packager output not found: $source"
+          }
+          $outDir = Join-Path $env:RUNNER_TEMP 'artifact'
+          New-Item -ItemType Directory -Force -Path $outDir | Out-Null
+          Copy-Item $source (Join-Path $outDir 'Coyote-FFXiv.zip') -Force
+
+      - name: Release latest
+        uses: ncipollo/release-action@v1
+        with:
+          tag: latest
+          name: latest
+          allowUpdates: true
+          replacesArtifacts: true
+          artifacts: ${{ runner.temp }}\artifact\Coyote-FFXiv.zip

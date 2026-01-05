@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Numerics;
 
 namespace Coyote.Gui;
-public class HealthTriggerUI
+public class HealthTriggerUI : IDisposable
 {
     private readonly Configuration Configuration;
     private readonly Plugin Plugin;
@@ -196,5 +196,11 @@ public class HealthTriggerUI
     {
         // 处理血量变化逻辑
         Plugin.Log.Info($"血量变化: {currentHp}/{maxHp} ({percentage}%)");
+    }
+
+    public void Dispose()
+    {
+        HealthWatcher.OnHealthChanged -= HandleHealthChange;
+        HealthWatcher.Dispose();
     }
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Dalamud.CN.NET.SDK/13.1.0">
+<Project Sdk="Dalamud.CN.NET.SDK/14.0.1">
 
   <PropertyGroup>
     <Version>0.0.1.1</Version>
@@ -7,7 +7,7 @@
     <PackageProjectUrl>https://github.com/goatcorp/SamplePlugin</PackageProjectUrl>
     <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
     <IsPackable>false</IsPackable>
-    <TargetFramework>net9.0-windows7.0</TargetFramework>
+    <TargetFramework>net10.0-windows7.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,11 +21,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="ECommons">
-      <HintPath>..\..\..\Dalamud\Main\Dev\AEAssistCNVersion\AEAssist\ECommons.dll</HintPath>
-    </Reference>
-    <Reference Include="InteropGenerator.Runtime">
-      <HintPath>C:\Users\Administrator\AppData\Roaming\XIVLauncherCN\addon\Hooks\dev\InteropGenerator.Runtime.dll</HintPath>
-    </Reference>
+    <PackageReference Update="DalamudPackager" Version="14.0.1" />
+    <PackageReference Update="DotNet.ReproducibleBuilds" Version="1.2.39" />
+    <PackageReference Include="ECommons" Version="3.1.0.12" />
   </ItemGroup>
 </Project>

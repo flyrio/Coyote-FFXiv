@@ -28,6 +28,7 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static ITextureProvider TextureProvider { get; private set; } = null!;
     [PluginService] internal static ICommandManager CommandManager { get; private set; } = null!;
     [PluginService] public static IClientState ClientState { get; private set; } = null!;
+    [PluginService] public static IObjectTable ObjectTable { get; private set; } = null!;
     [PluginService] public static IFramework Framework { get; private set; } = null!;
     [PluginService] public static IPluginLog Log { get; private set; } = null!;
     [PluginService] public static ISigScanner SigScanner { get; private set; } = null!;
@@ -91,6 +92,11 @@ public sealed class Plugin : IDalamudPlugin
         MainWindow.Dispose();
 
         CommandManager.RemoveHandler(CommandName);
+        CommandManager.RemoveHandler(CommandName2);
+        PluginInterface.UiBuilder.Draw -= DrawUI;
+        PluginInterface.UiBuilder.OpenMainUi -= ToggleMainUI;
+        EmoteTool.Dispose();
+        httpClient.Dispose();
         ChatTriggerRuleManager.SaveRules(Configuration.chatTriggerRules);
         HPTriggerRuleManager.SaveRules(Configuration.HealthTriggerRules);
         Plugin.Log.Info("触发规则已保存。");
@@ -102,19 +108,43 @@ public sealed class Plugin : IDalamudPlugin
         ToggleMainUI();
     }
 
-    private string fireResponse;
+    private string fireResponse = string.Empty;
     private async void OnSFire(string command, string arguments)
     {
         //Plugin.Chat.Print($"A:{arguments}");
-        var args = arguments.Split(' ');
+        var args = arguments.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         //Plugin.Chat.Print($"B:{args[0]} C:{args}{args[1]}{args[2]}");
         try
         {
+            if (args.Length < 3)
+            {
+                Plugin.Chat.PrintError("用法: /coyotefire <火力(int)> <时间(毫秒:int)> <是否重置计时(bool)> <波形ID(非必填:string)>");
+                return;
+            }
+
+            if (!int.TryParse(args[0], out var strength))
+            {
+                Plugin.Chat.PrintError("参数错误: 火力必须是整数。");
+                return;
+            }
+
+            if (!int.TryParse(args[1], out var time))
+            {
+                Plugin.Chat.PrintError("参数错误: 时间必须是整数(毫秒)。");
+                return;
+            }
+
+            if (!TryParseBool(args[2], out var overrideTime))
+            {
+                Plugin.Chat.PrintError("参数错误: 是否重置计时必须是 true/false 或 1/0。");
+                return;
+            }
+
             var requestContent = new
             {
-                strength = args[0],
-                time = args[1],
-                @override = args[2],
+                strength,
+                time,
+                @override = overrideTime,
                 pulseId = args.Length > 3 ? $"{args[3]}" : string.Empty
             };
 
@@ -152,5 +182,28 @@ public sealed class Plugin : IDalamudPlugin
     private void DrawUI() => WindowSystem.Draw();
 
     public void ToggleMainUI() => MainWindow.Toggle();
+
+    private static bool TryParseBool(string value, out bool result)
+    {
+        if (bool.TryParse(value, out result))
+        {
+            return true;
+        }
+
+        if (value == "1")
+        {
+            result = true;
+            return true;
+        }
+
+        if (value == "0")
+        {
+            result = false;
+            return true;
+        }
+
+        result = false;
+        return false;
+    }
 
 }

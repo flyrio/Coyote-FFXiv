@@ -22,7 +22,7 @@ namespace Coyote.Utils {
         private delegate byte RunEmoteDelegate(IntPtr a1, ushort emoteId, IntPtr a3);
 
         public string Name => "情感动作";
-        private Plugin Plugin { get; }
+        private readonly Plugin Plugin;
         private Hook<SetActionOnHotbarDelegate>? SetActionOnHotbarHook { get; }
         private RunEmoteDelegate? RunEmoteFunction { get; }
         private readonly IntPtr _runEmoteFirstArg;
@@ -32,7 +32,7 @@ namespace Coyote.Utils {
         private Emote? Emote { get; set; }
 
         internal EmoteTool(Plugin plugin) {
-
+            Plugin = plugin;
 
             Plugin.CommandManager.AddHandler("/emoteid", new CommandInfo(this.EmoteIdCommand) {
                 HelpMessage = "根据emoteid, 执行已解锁的表情",

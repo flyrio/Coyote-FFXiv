@@ -14,16 +14,17 @@ using Coyote.Utils;
 using System.Net.Http;
 using Coyote;
 using System.Xml.Linq;
+using Dalamud.Utility;
+using Lumina.Excel.Sheets;
 namespace Coyote.Gui;
-public class BuffTriggerUI
+public class BuffTriggerUI : IDisposable
 {
     private static string ConfigFilePath =>
     Path.Combine(Plugin.PluginInterface.GetPluginConfigDirectory(), "BuffTriggerConfig.json");
     private List<BuffTriggerRule> BuffTriggerRules = new();
     private int selectedRuleIndex = -1;
-    private string fireResponse;
+    private string fireResponse = string.Empty;
     private bool isBuffTriggerRunning = false;
-    private readonly Dictionary<string, double> BuffCooldowns = new();
     private Configuration Configuration; // 配置对象
     private Plugin Plugin; // 插件实例
     private readonly HttpClient httpClient = new HttpClient();
@@ -198,15 +199,19 @@ public class BuffTriggerUI
 
     }
 
-    private readonly Dictionary<string, float> BuffLastTriggerTime = new(); // 用于记录 Buff 上次触发的整数秒时间
+    private readonly Dictionary<string, float> BuffLastTriggerTime = new(StringComparer.OrdinalIgnoreCase); // 用于记录 Buff 上次触发的整数秒时间
     private void OnFrameworkUpdateForBuff(IFramework framework)
     {
-        var localPlayer = Plugin.ClientState.LocalPlayer;
+        var localPlayer = Plugin.ObjectTable.LocalPlayer;
         if (localPlayer == null || !isBuffTriggerRunning) return;
 
+        var statusSheet = Plugin.DataManager.GetExcelSheet<Status>();
         var activeStatuses = localPlayer.StatusList
-            .Where(s => s.GameData.ValueNullable != null && !string.IsNullOrEmpty(s.GameData.ValueNullable?.Name.ExtractText()))
-            .ToDictionary(s => s.GameData.ValueNullable ?.Name.ExtractText(), s => s.RemainingTime);
+            .Select(s => new { s.RemainingTime, Row = statusSheet?.GetRow(s.StatusId) })
+            .Select(x => new { x.RemainingTime, Name = x.Row?.Name.ExtractText() })
+            .Where(x => !string.IsNullOrEmpty(x.Name))
+            .GroupBy(x => x.Name!, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.Max(x => x.RemainingTime), StringComparer.OrdinalIgnoreCase);
 
         
 
@@ -236,12 +241,11 @@ public class BuffTriggerUI
                     continue;
                 }
             }
-            else if (BuffCooldowns.ContainsKey(rule.BuffName))
+            else if (BuffLastTriggerTime.ContainsKey(rule.BuffName))
         {
             // 如果 Buff 不再存在，则重置冷却和触发时间
             //Plugin.Chat.Print($"Buff 已消失，重置规则: {rule.Name} (Buff: {rule.BuffName})");
             TriggerFireAction(0, 0, true, rule.PulseId);
-            BuffCooldowns.Remove(rule.BuffName);
             BuffLastTriggerTime.Remove(rule.BuffName); // 清除触发时间记录
         }
         }
@@ -286,6 +290,13 @@ public class BuffTriggerUI
             Plugin.Log.Warning(fireResponse);
             Plugin.Configuration.Log = fireResponse;
         }
+    }
+
+    public void Dispose()
+    {
+        Plugin.Framework.Update -= OnFrameworkUpdateForBuff;
+        httpClient.Dispose();
+        isBuffTriggerRunning = false;
     }
 
 }

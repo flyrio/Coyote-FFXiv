@@ -1,32 +1,30 @@
 using Coyote;
 using Dalamud.Plugin.Services;
-using FFXIVClientStructs.FFXIV.Client.System.Framework;
-using Dalamud.Bindings.ImGui;
 using System;
-using static MainWindow;
 using System.Net.Http;
-using System.Text.Json;
 using System.Text;
-using System.Net.Http;
-using FFXIVClientStructs.FFXIV.Client.Game.Control;
+using System.Text.Json;
 
 namespace Coyote.Utils;
-public class HealthWatcher
+public class HealthWatcher : IDisposable
 {
     private readonly Plugin Plugin;
     private int previousHp;
-    private string fireResponse;
-    public event Action<int, int, int> OnHealthChanged; // 事件触发时传递当前 HP、最大 HP 和百分比
+    private bool hasPreviousHp;
+    private string fireResponse = string.Empty;
+    public event Action<int, int, int>? OnHealthChanged; // 事件触发时传递当前 HP、最大 HP 和百分比
     private Configuration _configuration;
     private readonly HttpClient httpClient = new HttpClient();
 
-    public unsafe HealthWatcher(Plugin plugin)
+    public HealthWatcher(Plugin plugin)
     {
         Plugin = plugin;
         _configuration = plugin.Configuration;
-        if (Control.GetLocalPlayer() != null)
+        var localPlayer = Plugin.ObjectTable.LocalPlayer;
+        if (localPlayer != null)
         {
-            previousHp = (int)Control.GetLocalPlayer()->Health;
+            previousHp = (int)localPlayer.CurrentHp;
+            hasPreviousHp = true;
         }
     }
 
@@ -42,12 +40,25 @@ public class HealthWatcher
 
     private void OnFrameworkUpdateForHpChange(IFramework framework)
     {
-        if (Plugin.ClientState.LocalPlayer == null || _configuration.HealthTriggerRules.Count == 0)
+        var localPlayer = Plugin.ObjectTable.LocalPlayer;
+        if (localPlayer == null || _configuration.HealthTriggerRules.Count == 0)
             return;
 
-        var localPlayer = Plugin.ClientState.LocalPlayer;
         int currentHp = (int)localPlayer.CurrentHp;
-        int currentHpPercentage = (int)((localPlayer.CurrentHp / (float)localPlayer.MaxHp) * 100);
+        int maxHp = (int)localPlayer.MaxHp;
+        int currentHpPercentage = maxHp > 0 ? (int)((currentHp / (float)maxHp) * 100) : 0;
+
+        if (!hasPreviousHp)
+        {
+            previousHp = currentHp;
+            hasPreviousHp = true;
+            return;
+        }
+
+        if (currentHp != previousHp)
+        {
+            OnHealthChanged?.Invoke(currentHp, maxHp, currentHpPercentage);
+        }
 
         foreach (var rule in _configuration.HealthTriggerRules)
         {
@@ -123,6 +134,12 @@ public class HealthWatcher
             Plugin.Log.Warning(fireResponse);
             Plugin.Configuration.Log = fireResponse;
         }
+    }
+
+    public void Dispose()
+    {
+        StopWatching();
+        httpClient.Dispose();
     }
 
 }

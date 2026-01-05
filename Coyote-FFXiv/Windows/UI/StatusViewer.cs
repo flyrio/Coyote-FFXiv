@@ -26,7 +26,6 @@ public class BuffIconSelector
     private List<Job> Jobs = [];
     private string Filter = "";
     public List<uint> IconArray = [];
-    private bool Fullscreen = false;
     public uint SelectedIconID; // 当前选中的 IconID
     public MyStatus Delegate;  // 当前选中的状态对象
     private Configuration Configuration; // 配置对象
@@ -36,6 +35,7 @@ public class BuffIconSelector
     public BuffIconSelector(Configuration configuration, Plugin plugin)
     {
         Delegate = new MyStatus();
+        Plugin = plugin;
         var statusSheet = Plugin.DataManager.GetExcelSheet<Status>();
         Configuration = configuration;
         foreach (var status in statusSheet)
@@ -51,9 +51,10 @@ public class BuffIconSelector
 
     public void Draw()
     {
-        if (Plugin.ClientState.LocalPlayer != null)
+        var localPlayer = Plugin.ObjectTable.LocalPlayer;
+        if (localPlayer != null)
         {
-            var statusList = Plugin.ClientState.LocalPlayer.StatusList;
+            var statusList = localPlayer.StatusList;
 
             if (statusList != null && statusList.Count() > 0)
             {
@@ -61,7 +62,11 @@ public class BuffIconSelector
                 {
                     if (status == null || status.StatusId == 0) continue;
 
-                    ImGui.Text($"Status Name: {status.GameData.ValueNullable.ToString}");
+                    var statusName = status.GameData.ValueNullable?.Name.ExtractText();
+                    if (!string.IsNullOrEmpty(statusName))
+                    {
+                        ImGui.Text($"Status Name: {statusName}");
+                    }
                 }
             }
             else
@@ -151,20 +156,20 @@ public class BuffIconSelector
                 index++;
                 ImGui.TableNextColumn();
 
-                IDalamudTextureWrap tex = null;
+                IDalamudTextureWrap? tex = null;
 
                 try
                 {
                     // 尝试加载指定图标
                     tex = TexturesHelper.GetTextureFromIconId(info.IconID);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     try
                     {
                         tex = TexturesHelper.GetTextureFromIconId(0);
                     }
-                    catch (Exception fallbackEx)
+                    catch (Exception)
                     {
                         tex = null; // 如果默认图标也失败，则设置为 null
                     }

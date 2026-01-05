@@ -25,7 +25,7 @@ public class Configuration : IPluginConfiguration
     public string Log { get; set; } = "";
     public static HashSet<uint> FavIcons { get; set; } = new HashSet<uint>();
     public bool UseAll { get; set; } = false;
-    public List<ChatTriggerRule> chatTriggerRules;
+    public List<ChatTriggerRule> chatTriggerRules { get; set; } = new List<ChatTriggerRule>();
     public List<HealthTriggerRule> HealthTriggerRules { get; set; } = new List<HealthTriggerRule>();
 
     public void Save()

@@ -18,10 +18,7 @@ namespace Coyote.Utils;
 
 public class ChatWatcher : IDisposable
 {
-    private readonly SortedSet<XivChatType> _watchedChannels = new();
-    private readonly Hook<PrintMessageDelegate> _printMessageHook;
-    private bool _watchAllChannels;
-    private string fireResponse;
+    private string fireResponse = string.Empty;
     private Configuration _configuration;
     private readonly HttpClient httpClient = new HttpClient();
     public unsafe ChatWatcher(Configuration configuration)
@@ -39,8 +36,7 @@ public class ChatWatcher : IDisposable
     {
         Plugin.Chat.CheckMessageHandled -= OnCheckMessageHandled;
         Plugin.Chat.ChatMessage -= OnChatMessage;
-        //_printMessageHook.Disable();
-        //_printMessageHook.Dispose();
+        httpClient.Dispose();
     }
 
     private static void CopySublist(IReadOnlyList<Payload> payloads, List<Payload> newPayloads, int from, int to)

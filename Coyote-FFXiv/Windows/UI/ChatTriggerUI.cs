@@ -10,13 +10,13 @@ using System.Threading.Tasks;
 
 
 namespace Coyote.Gui;
-public class ChatTriggerUI
+public class ChatTriggerUI : IDisposable
 {
     private Configuration Configuration; // 配置对象
     private Plugin Plugin; // 插件实例
     private int selectedRuleIndex = -1; // 当前选中的规则索引
     private bool isChatTriggerRunning = false; // 聊天触发的开关状态
-    private ChatWatcher chatWatcher; // 聊天监听器
+    private ChatWatcher? chatWatcher; // 聊天监听器
 
     public ChatTriggerUI(Configuration configuration, Plugin plugin)
     {
@@ -32,11 +32,12 @@ public class ChatTriggerUI
         {
             if (isChatTriggerRunning)
             {
-                chatWatcher = new ChatWatcher(Configuration);
+                chatWatcher ??= new ChatWatcher(Configuration);
             }
             else
             {
-                chatWatcher.Dispose();
+                chatWatcher?.Dispose();
+                chatWatcher = null;
             }
         }
 
@@ -216,6 +217,13 @@ public class ChatTriggerUI
 
         ImGui.EndChild();
 
+    }
+
+    public void Dispose()
+    {
+        chatWatcher?.Dispose();
+        chatWatcher = null;
+        isChatTriggerRunning = false;
     }
 
 }

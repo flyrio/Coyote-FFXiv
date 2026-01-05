@@ -21,17 +21,14 @@ public class MainWindow : Window, IDisposable
     private readonly HttpClient httpClient = new HttpClient();
     private string GoatImagePath;
     private Plugin Plugin;
-    private int previousHp;
-    private bool isHealthDecreasing;
     private string fireResponse;
-    private ApiResponse parsedResponse; // 用于存储解析后的 API 数据
+    private ApiResponse? parsedResponse; // 用于存储解析后的 API 数据
     private Configuration Configuration;
     private ChatTriggerUI chatTriggerUI;
     private HealthWatcher healthWatcher;
     private HealthTriggerUI healthTriggerUI;
     private BuffIconSelector buffIconSelector;
     private BuffTriggerUI buffTriggerUI;
-    private int selectedTab = 0; // 当前选中的选项卡
 
     public MainWindow(Plugin plugin, string goatImagePath)
         : base("Coyote-FFXiv##Dalamud1",ImGuiWindowFlags.NoResize)
@@ -71,6 +68,9 @@ public class MainWindow : Window, IDisposable
 
     public void Dispose()
     {
+        chatTriggerUI.Dispose();
+        healthTriggerUI.Dispose();
+        buffTriggerUI.Dispose();
         httpClient.Dispose();
     }
 
@@ -177,7 +177,6 @@ public class MainWindow : Window, IDisposable
         ImGui.TextColored(new Vector4(1, 0, 0, 1), "请保证在安全、清醒、自愿的情况下使用\n严禁体内存在电子/金属植入物者、心脑血管疾病患者、孕妇、儿童或无法及时操作主机的人群使用\n严禁将电极置于心脏投影区（或任何可能使电流经过心脏的位置），以及头部、颈部、皮肤破损处等位置\n严禁在驾驶或操纵机器等危险情况下使用\n请勿在同一部位连续使用30分钟以上，以免造成损伤\n请勿在输出状态下移动电极，以免造成刺痛或灼伤\n在直播过程中使用可能会导致直播间被封禁，风险自负\n在使用前需要完整阅读郊狼产品安全须知，并设置好强度上限保护。");
         DrawApiResponse();
     }
-    private ChatWatcher chatWatcher;
     private void DrawTriggerPage()
     {
         if (ImGui.BeginTabBar("TriggerTabBar"))
@@ -375,11 +374,11 @@ public class MainWindow : Window, IDisposable
     public class ApiResponse
     {
         public int Status { get; set; }
-        public string Code { get; set; }
-        public StrengthConfig StrengthConfig { get; set; }
-        public GameConfig GameConfig { get; set; }
-        public ClientStrength ClientStrength { get; set; }
-        public string CurrentPulseId { get; set; }
+        public string Code { get; set; } = string.Empty;
+        public StrengthConfig? StrengthConfig { get; set; }
+        public GameConfig? GameConfig { get; set; }
+        public ClientStrength? ClientStrength { get; set; }
+        public string CurrentPulseId { get; set; } = string.Empty;
     }
 
     public class StrengthConfig
@@ -390,11 +389,11 @@ public class MainWindow : Window, IDisposable
 
     public class GameConfig
     {
-        public int[] StrengthChangeInterval { get; set; }
+        public int[] StrengthChangeInterval { get; set; } = Array.Empty<int>();
         public bool EnableBChannel { get; set; }
         public double BChannelStrengthMultiplier { get; set; }
-        public string PulseId { get; set; }
-        public string PulseMode { get; set; }
+        public string PulseId { get; set; } = string.Empty;
+        public string PulseMode { get; set; } = string.Empty;
         public int PulseChangeInterval { get; set; }
     }
 
